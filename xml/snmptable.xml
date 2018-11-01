@@ -1,0 +1,68 @@
+
+<sampler name="snmptable">
+	<var-group>
+		<data>SNMP</data>
+	</var-group>
+	<sampleInterval>
+		<data>60</data>
+	</sampleInterval>
+	<plugin>
+		<toolkit>
+			<samplerScript>
+				<var ref="NETPROBEHOME"/>
+				<data>/scripts/snmptable.sh</data>
+			</samplerScript>
+			<environmentVariables>
+				<variable>
+					<name>HOST</name>
+					<value>
+						<data/>
+					</value>
+				</variable>
+				<variable>
+					<name>COMMUNITY</name>
+					<value>
+						<data/>
+					</value>
+				</variable>
+				<variable>
+					<name>TABLE</name>
+					<value>
+						<data/>
+					</value>
+				</variable>
+				<variable>
+					<name>VENDOR</name>
+					<value>
+						<data/>
+					</value>
+				</variable>
+				<variable>
+					<name>MIBDIR</name>
+					<value>
+						<data/>
+					</value>
+				</variable>
+			</environmentVariables>
+			<script>
+				<contents>
+					<data>#!/bin/bash
+
+set -e 
+set -o pipefail
+
+# Create colon separated list of mib files from a directory
+MIBFILES=`find ${MIBDIR} -type f | egrep -i &quot;${MIBDIR}/(RFC|SNMP|$VENDOR)&quot; | tr &quot;\n&quot; &quot;:&quot;`
+
+snmptable ${HOST} -v2c -c ${COMMUNITY} -m ${MIBFILES} -Ln ${TABLE} -Cf @ | sed -e &apos;1,/^$/d&apos; -e &apos;s/\&quot;//g&apos; -e &apos;s/,/\\,/g&apos; -e &apos;s/@/,/g&apos;
+
+echo &quot;&lt;!&gt;host,${HOST}&quot;
+echo &quot;&lt;!&gt;table,${TABLE}&quot;</data>
+				</contents>
+				<filename>
+					<data>scripts/snmptable.sh</data>
+				</filename>
+			</script>
+		</toolkit>
+	</plugin>
+</sampler>
